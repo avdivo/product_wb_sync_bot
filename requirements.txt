@@ -1,0 +1,9 @@
+aiogram==3.13.1
+fastapi==0.115.2
+python-dotenv==1.0.1
+uvicorn==0.34.0
+httpx~=0.28.1
+asyncpg==0.30.0
+SQLAlchemy==2.0.37
+psycopg2-binary==2.9.10
+alembic==1.14.1
