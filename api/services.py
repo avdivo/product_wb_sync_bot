@@ -1,11 +1,14 @@
+import jwt
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
+from fastapi.security import HTTPAuthorizationCredentials
 
 from schemas.schemas import Response
 from db.crud import create_or_update_product
 from config.config_db import async_session
+from config.config import Config
 
 
 async def fetch_product_details(db: AsyncSession,  article_number):
@@ -14,7 +17,6 @@ async def fetch_product_details(db: AsyncSession,  article_number):
     :param article_number:
     :return: json
     """
-    print(article_number, type(article_number), '-----------------------------')
     url = f"https://card.wb.ru/cards/v1/detail"
     params = {
         "appType": 1,
@@ -35,13 +37,13 @@ async def fetch_product_details(db: AsyncSession,  article_number):
         raise HTTPException(
             status_code=502,
             detail={
-                "error": "Invalid response structure from upstream service",
+                "error": "Неверный ответ WB",
                 "details": e.errors(),
             },
         )
 
     if not response_data.data.products:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(status_code=404, detail="Товар не найден")
 
     # Извлечение нужных данных из разобранного объекта
     product = response_data.data.products[0]
@@ -62,3 +64,14 @@ async def update_product_by_article(article: str):
     # Создаем новую сессию вручную
     async with async_session() as session:
         await fetch_product_details(session, article)
+
+
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(Config.security)):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, Config.SECRET_KEY, algorithms=[Config.ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")

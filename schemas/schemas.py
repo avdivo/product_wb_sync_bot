@@ -39,7 +39,7 @@ class ProductOut(BaseModel):
 
 
 class SubscribePath(BaseModel):
-    artikul: int = Field(..., title="Артикул товара", description="Уникальный номер товара.")
+    article: int = Field(..., title="Артикул товара", description="Уникальный номер товара.")
 
 
 class SubscriptionResponse(BaseModel):

@@ -1,5 +1,7 @@
 import asyncio
-from fastapi import APIRouter, Request, Depends, Path
+from http.client import HTTPException
+
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from aiogram.types import Update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +10,7 @@ from config.config import Config
 from config.config_bot import bot, dp
 from config.config_db import get_db
 from schemas.schemas import ProductRequest, ProductOut, SubscriptionResponse, SubscribePath
-from .services import fetch_product_details, update_product_by_article
+from .services import fetch_product_details, update_product_by_article, verify_token
 from config.config_scheduler import scheduler
 
 
@@ -27,22 +29,30 @@ async def handle_webhook(request: Request, db: AsyncSession = Depends(get_db)):
 
 
 @api_router.post("/products", response_model=ProductOut)
-async def get_items(request: ProductRequest, db: AsyncSession = Depends(get_db)):
+async def get_items(request: ProductRequest, db: AsyncSession = Depends(get_db),
+                    payload: dict = Depends(verify_token)):
     return await fetch_product_details(db, request.article)
 
 
 @api_router.get(
-    "/subscribe/{artikul}",
+    "/subscribe/{article}",
     summary="Подпишитесь на обновления продукта",
     description="Включает периодическое обновление информации для указанного артикула.",
     response_model=SubscriptionResponse,
     response_description="Успешное подключение к обновлениям для товара."
 )
-async def subscribe_to_product(artikul: SubscribePath = Depends()):
+async def subscribe_to_product(article: SubscribePath = Depends(),
+                                db: AsyncSession = Depends(get_db),
+                                payload: dict = Depends(verify_token)):
     """Включение обновления для конкретного артикула.
-       - **artikul**: Артикул товара.
+       - **article**: Артикул товара.
     """
-    job_id = f"update_{artikul}"
+    try:
+        await fetch_product_details(db, article.article)
+    except Exception as error:
+        raise error
+
+    job_id = f"update_{article}"
 
     # Добавляем новую задачу для обновления товара
     scheduler.add_job(
@@ -50,11 +60,11 @@ async def subscribe_to_product(artikul: SubscribePath = Depends()):
         trigger="interval",
         # minutes=30,
         seconds=10,
-        args=[artikul.artikul],
+        args=[article.article],
         id=job_id,
         jobstore='default',
         replace_existing=True
     )
 
-    return SubscriptionResponse(detail=f"Включено периодичное обновление товара {artikul}")
+    return SubscriptionResponse(detail=f"Включено периодичное обновление товара {article}")
 

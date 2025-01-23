@@ -8,3 +8,4 @@ SQLAlchemy==2.0.37
 psycopg2-binary==2.9.10
 alembic==1.14.1
 apscheduler[asyncio]
+PyJWT==2.10.1
