@@ -5,6 +5,7 @@ from pydantic import ValidationError
 
 from schemas.schemas import Response
 from db.crud import create_or_update_product
+from config.config_db import async_session
 
 
 async def fetch_product_details(db: AsyncSession,  article_number):
@@ -13,6 +14,7 @@ async def fetch_product_details(db: AsyncSession,  article_number):
     :param article_number:
     :return: json
     """
+    print(article_number, type(article_number), '-----------------------------')
     url = f"https://card.wb.ru/cards/v1/detail"
     params = {
         "appType": 1,
@@ -53,3 +55,10 @@ async def fetch_product_details(db: AsyncSession,  article_number):
     product = await create_or_update_product(db, article, name, price, rating, total_quantity)
 
     return product
+
+
+async def update_product_by_article(article: str):
+    """Логика обновления информации о товаре."""
+    # Создаем новую сессию вручную
+    async with async_session() as session:
+        await fetch_product_details(session, article)

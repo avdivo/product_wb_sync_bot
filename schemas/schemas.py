@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import Optional, Dict, Any, List
 
 
 class ProductRequest(BaseModel):
@@ -36,3 +36,11 @@ class ProductOut(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class SubscribePath(BaseModel):
+    artikul: int = Field(..., title="Артикул товара", description="Уникальный номер товара.")
+
+
+class SubscriptionResponse(BaseModel):
+    detail: str

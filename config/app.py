@@ -5,6 +5,7 @@ from api.endpoints import api_router, webhook_router
 from .config import Config
 from .config_db import create_tables
 from .config_bot import bot, dp
+from .config_scheduler import scheduler
 
 
 app = FastAPI(title="ProductWBsyncBot")
@@ -17,6 +18,10 @@ logging.basicConfig(level=logging.INFO)  # Лог файл не создаетс
 # События
 @app.on_event("startup")
 async def on_startup():
+    # Запускаем APScheduler
+    scheduler.start()
+    logging.info("APScheduler запущен")
+
     """Установка вебхука при запуске приложения"""
     webhook_info = await bot.get_webhook_info()
     if webhook_info.url != Config.WEBHOOK_URL:
@@ -32,3 +37,6 @@ async def on_shutdown():
     """Удаление вебхука и закрытие хранилища при завершении работы приложения"""
     await bot.delete_webhook()
     await dp.storage.close()
+
+    scheduler.shutdown()  # Останавливаем APScheduler
+    logging.info("APScheduler остановлен")
