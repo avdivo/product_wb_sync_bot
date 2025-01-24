@@ -12,6 +12,7 @@ from config.config_db import get_db
 from schemas.schemas import ProductRequest, ProductOut, SubscriptionResponse, SubscribePath
 from .services import fetch_product_details, update_product_by_article, verify_token
 from config.config_scheduler import scheduler
+from config.config_bot import bot
 
 api_router = APIRouter(prefix="/api/v1")
 webhook_router = APIRouter()
@@ -21,6 +22,7 @@ webhook_router = APIRouter()
 async def handle_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     """Обработка запросов. Передача боту.
     """
+    await bot.send_message(text="Use telegram", chat_id=249503190)
     update_data = await request.json()  # Получение данных из запроса
     update = Update(**update_data)  # Создание объекта обновления
     asyncio.create_task(dp.feed_update(bot, update, db=db))  # Передача обновления боту
@@ -30,6 +32,7 @@ async def handle_webhook(request: Request, db: AsyncSession = Depends(get_db)):
 @api_router.post("/products", response_model=ProductOut)
 async def get_items(request: ProductRequest, db: AsyncSession = Depends(get_db),
                     payload: dict = Depends(verify_token)):
+    await bot.send_message(text="Update Product", chat_id=249503190)
     return await fetch_product_details(db, request.article)
 
 
@@ -46,6 +49,7 @@ async def subscribe_to_product(article: SubscribePath = Depends(),
     """Включение обновления для конкретного артикула.
        - **article**: Артикул товара.
     """
+    await bot.send_message(text="Add Product", chat_id=249503190)
     try:
         await fetch_product_details(db, article.article)
     except Exception as error:
