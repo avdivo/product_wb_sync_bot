@@ -22,7 +22,7 @@ services:
     command: python main.py
     restart: always
     ports:
-      - 80:8000
+      - ${APP_PORTS}
     environment:
       DB_HOST: postgres
 

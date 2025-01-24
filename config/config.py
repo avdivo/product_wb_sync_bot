@@ -15,6 +15,6 @@ class Config:
     DB_PASSWORD = os.getenv('DB_PASSWORD')
     SECRET_KEY = os.getenv('SECRET_KEY')
     ALGORITHM = os.getenv('ALGORITHM')
-
+    APP_PORTS = os.getenv('APP_PORTS')[-4:]
     # Создание экземпляра HTTPBearer
     security = HTTPBearer()
