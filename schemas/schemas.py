@@ -27,6 +27,7 @@ class Response(BaseModel):
     params: dict  # Параметры запроса
     data: ResponseData
 
+
 class ProductOut(BaseModel):
     article: int  # Артикул товара
     name: str  # Название товара

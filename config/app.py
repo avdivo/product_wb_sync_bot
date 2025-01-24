@@ -7,7 +7,6 @@ from .config_db import create_tables
 from .config_bot import bot, dp
 from .config_scheduler import scheduler
 
-
 app = FastAPI(title="ProductWBsyncBot")
 app.include_router(api_router)  # Подключение маршрутов
 app.include_router(webhook_router)  # Подключение маршрутов
@@ -18,11 +17,14 @@ logging.basicConfig(level=logging.INFO)  # Лог файл не создаетс
 # События
 @app.on_event("startup")
 async def on_startup():
+    """Установка вебхука телеграмм, запуск планировщика,
+    создание таблиц"""
+
     # Запускаем APScheduler
     scheduler.start()
     logging.info("APScheduler запущен")
 
-    """Установка вебхука при запуске приложения"""
+    # Установка вебхука
     webhook_info = await bot.get_webhook_info()
     if webhook_info.url != Config.WEBHOOK_URL:
         await bot.set_webhook(Config.WEBHOOK_URL)

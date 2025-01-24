@@ -11,7 +11,7 @@ from config.config_db import async_session
 from config.config import Config
 
 
-async def fetch_product_details(db: AsyncSession,  article_number):
+async def fetch_product_details(db: AsyncSession, article_number):
     """Делает запроc товара к WB по его артикулу
 
     :param article_number:
