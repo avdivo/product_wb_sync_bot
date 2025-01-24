@@ -19,7 +19,7 @@ services:
       - .:/code
     depends_on:
       - postgres
-#    command: python main.py
+    command: python main.py
     restart: always
     ports:
       - 8000:8000

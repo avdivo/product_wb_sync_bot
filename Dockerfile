@@ -12,5 +12,3 @@ RUN chmod +x /usr/local/bin/wait-for-it
 # Копирование кода приложения
 COPY . .
 
-# Команда для выполнения миграций и запуска приложения
-CMD alembic upgrade head && python main.py
